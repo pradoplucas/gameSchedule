@@ -1,0 +1,57 @@
+
+<div class="container-fluid h-100">
+
+    <div class="row justify-content-center text-center">
+
+        <input type="checkbox" class="btn-check" id="checkTheme" onchange="changeTheme(this.checked)">
+        <label role="button" class="dark text-color toggleTheme h1 my-3" for="checkTheme">Game Schedule</label>
+
+        <div class="col-12 mb-3 row justify-content-center text-center text-white input-group">
+
+            <input type="radio" class="btn-check" name="days" id="allDates" autocomplete="off" onchange="showAllRadio()" checked>
+            <label class="dark btn btn-custom col-3 col-lg-1 rounded-0 toggleTheme" for="allDates">All<br>Games</label>
+
+            {{#each gamesDate}}
+
+                <input type="radio" class="btn-check" name="days" id="{{date}}" value="{{date}}" autocomplete="off" onchange="changeRadio(this.value)">
+                <label class="dark btn btn-custom col-3 col-lg-1 rounded-0 toggleTheme" for="{{date}}">{{dateShow}}<br>{{weekDay}}</label>
+                
+            {{/each}}
+
+        </div>
+
+        <div class="col-12 col-lg-8 row justify-content-center align-items-center text-center">
+
+            {{#each gamesNow}}
+
+                <div class="{{date}} col-12 col-lg-6 oneGame">
+                    <div class="dark row justify-content-center align-items-center text-center border rounded-3 py-3 my-2 mx-0 toggleTheme">
+                        <div class="col-4">
+                            <img class="img-fluid" style="width: 35%;" src="{{logoHome}}">
+                            <div class="dark mt-2 text-color toggleTheme" data-bs-toggle="tooltip" data-bs-placement="top" title="{{teamHome}}">{{acronymHome}}</div>
+                        </div>
+
+                        <div class="col-4">
+                            <div class="dark lh-1 small m-0 text-color-50 toggleTheme">{{league}}</div>
+                            <div class="dark h3 m-0 text-color toggleTheme">{{time}}</div>
+                            <div class="dark lh-1 small m-0 text-color-50 toggleTheme">{{dateShow}}</div>
+                        </div>
+
+                        <div class="col-4">
+                            <img class="img-fluid" style="width: 35%;" src="{{logoAway}}">
+                            
+                            <div class="dark mt-2 text-color toggleTheme" data-bs-toggle="tooltip" data-bs-placement="top" title="{{teamAway}}">{{acronymAway}}</div>
+                        </div>
+
+                    </div>
+                </div>
+
+            {{/each}}
+
+
+        </div>
+    </div>
+</div>
+
+<!-- JS-->
+<script src="/js/index.js"></script>
