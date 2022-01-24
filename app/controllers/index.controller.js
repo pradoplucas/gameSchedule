@@ -90,7 +90,7 @@ function makeNBA() {
             for(oneGame of nbaData.leagueSchedule.gameDates[id].games){
                 if(oneGame.broadcasters.intlTvBroadcasters.length != 0){
 
-                    let dateGame = new Date(oneGame.gameDateTimeUTC),
+                    let dateGame = new Date(new Date(oneGame.gameDateTimeUTC).getTime() - 10800000),
                         dateGameStr = (dateGame.getDate() <= 9 ? '0' + dateGame.getDate() : dateGame.getDate()) + '-' + (dateGame.getMonth() < 9 ? '0' + (dateGame.getMonth() + 1) : (dateGame.getMonth() + 1));
 
                     allGamesNBA.push({
