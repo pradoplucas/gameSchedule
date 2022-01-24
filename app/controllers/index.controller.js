@@ -1,7 +1,7 @@
 const https = require('https'),
       fs = require('fs');
 
-const dateNow = new Date(),
+const dateNow = new Date(Date.now() - 10800000),
       weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function getPromise(url){
