@@ -2,7 +2,7 @@ const https = require('https'),
       fs = require('fs');
 
 const dateNow = new Date(Date.now() - 10800000),
-      weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];  
 
 function getPromise(url){
     
@@ -45,7 +45,8 @@ async function makeSynchronousRequestSoccer() {
                     let dateGame = oneMatch.data.split('-');
 
                     dateGame = new Date(dateGame[0], parseInt(dateGame[1]) - 1, dateGame[2]);
-                    dateGame = (dateGame.getDate() <= 9 ? '0' + dateGame.getDate() : dateGame.getDate()) + '-' + (dateGame.getMonth() < 9 ? '0' + (dateGame.getMonth() + 1) : (dateGame.getMonth() + 1));
+
+                    let dateGameStr = (dateGame.getDate() <= 9 ? '0' + dateGame.getDate() : dateGame.getDate()) + '-' + (dateGame.getMonth() < 9 ? '0' + (dateGame.getMonth() + 1) : (dateGame.getMonth() + 1));
     
                     allGamesSoccer.push({
                         type: 'soccer',
@@ -54,8 +55,9 @@ async function makeSynchronousRequestSoccer() {
                         acronymHome: oneMatch.time1.sigla,
                         teamAway: oneMatch.time2['nome-completo'],
                         acronymAway: oneMatch.time2.sigla,
-                        date: dateGame,
-                        dateShow: dateGame.replace('-','/'),
+                        date: dateGameStr,
+                        dateShow: dateGameStr.replace('-','/'),
+                        dateType: dateGame,
                         time: oneMatch.horario,
                         logoHome: oneMatch.time1.brasao,
                         logoAway: oneMatch.time2.brasao
@@ -102,6 +104,7 @@ function makeNBA() {
                         acronymAway: oneGame.awayTeam.teamTricode,
                         date: dateGameStr,
                         dateShow: dateGameStr.replace('-','/'),
+                        dateType: dateGame,
                         time: (dateGame.getHours() <= 9 ? '0' + dateGame.getHours() : dateGame.getHours()) + 'h' + (dateGame.getMinutes() <= 9 ? '0' + dateGame.getMinutes() : dateGame.getMinutes()),
                         logoHome: 'https://cdn.nba.com/logos/nba/' + oneGame.homeTeam.teamId + '/global/L/logo.svg',
                         logoAway: 'https://cdn.nba.com/logos/nba/' + oneGame.awayTeam.teamId + '/global/L/logo.svg',
@@ -145,6 +148,10 @@ module.exports = {
  
         (async function () {
 
+            console.log(dateNow)
+            console.log(dateNow.getDate())
+            console.log(dateNow.getHours())
+
             let gamesNow = [],
                 gamesDate = [],
                 auxDate;
@@ -154,6 +161,7 @@ module.exports = {
             
             for(day = 0; day < 7; day++){
                 auxDate = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate() + day);
+                console.log(auxDate)
                 gamesDate.push({
                     dateShow: (auxDate.getDate() <= 9 ? '0' + auxDate.getDate() : auxDate.getDate()) + '/' + (auxDate.getMonth() < 9 ? '0' + (auxDate.getMonth() + 1) : (auxDate.getMonth() + 1)),
                     date: (auxDate.getDate() <= 9 ? '0' + auxDate.getDate() : auxDate.getDate()) + '-' + (auxDate.getMonth() < 9 ? '0' + (auxDate.getMonth() + 1) : (auxDate.getMonth() + 1)),
@@ -161,7 +169,7 @@ module.exports = {
                 })
             }
 
-            res.render('index', {gamesNow, gamesDate});
+            res.render('index', {gamesNow: gamesNow.sort((a, b) => a.dateType - b.dateType), gamesDate});
 
         })();
     },
