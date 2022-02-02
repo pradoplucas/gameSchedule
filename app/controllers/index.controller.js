@@ -104,7 +104,7 @@ function makeNBA() {
                         acronymAway: oneGame.awayTeam.teamTricode,
                         date: dateGameStr,
                         dateShow: dateGameStr.replace('-','/'),
-                        dateType: dateGame,
+                        dateType: new Date(dateGame.getFullYear(), dateGame.getMonth(), dateGame.getDate()),
                         time: (dateGame.getHours() <= 9 ? '0' + dateGame.getHours() : dateGame.getHours()) + 'h' + (dateGame.getMinutes() <= 9 ? '0' + dateGame.getMinutes() : dateGame.getMinutes()),
                         logoHome: 'https://cdn.nba.com/logos/nba/' + oneGame.homeTeam.teamId + '/global/L/logo.svg',
                         logoAway: 'https://cdn.nba.com/logos/nba/' + oneGame.awayTeam.teamId + '/global/L/logo.svg',
@@ -148,10 +148,6 @@ module.exports = {
  
         (async function () {
 
-            console.log(dateNow)
-            console.log(dateNow.getDate())
-            console.log(dateNow.getHours())
-
             let gamesNow = [],
                 gamesDate = [],
                 auxDate;
@@ -161,7 +157,6 @@ module.exports = {
             
             for(day = 0; day < 7; day++){
                 auxDate = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate() + day);
-                console.log(auxDate)
                 gamesDate.push({
                     dateShow: (auxDate.getDate() <= 9 ? '0' + auxDate.getDate() : auxDate.getDate()) + '/' + (auxDate.getMonth() < 9 ? '0' + (auxDate.getMonth() + 1) : (auxDate.getMonth() + 1)),
                     date: (auxDate.getDate() <= 9 ? '0' + auxDate.getDate() : auxDate.getDate()) + '-' + (auxDate.getMonth() < 9 ? '0' + (auxDate.getMonth() + 1) : (auxDate.getMonth() + 1)),
@@ -169,7 +164,7 @@ module.exports = {
                 })
             }
 
-            res.render('index', {gamesNow: gamesNow.sort((a, b) => a.dateType - b.dateType), gamesDate});
+            res.render('index', {gamesNow: gamesNow.sort((a, b) => a.dateType - b.dateType == 0 ? parseInt(a.time) - parseInt(b.time) : a.dateType - b.dateType), gamesDate});
 
         })();
     },
@@ -189,7 +184,4 @@ module.exports = {
         }
 
     }
-}  
-
-//nfl1: 'https://fcast.espncdn.com/FastcastService/pubsub/profiles/12000/topic/event-football-nfl/message/2428889/checkpoint',
-//nfl2: 'https://api.foxsports.com/bifrost/v1/nfl/league/scores-segment/dp?apikey=jE7yBJVRNAwdDesMgTzTXUUSx1It41Fq',
+}
