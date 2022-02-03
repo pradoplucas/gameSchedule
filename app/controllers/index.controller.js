@@ -4,6 +4,19 @@ const https = require('https'),
 const dateNow = new Date(Date.now() - 10800000),
       weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];  
 
+
+function mountDateUTC(year, month, day){
+    return (year.toString() + '-' + (month < 9 ? '0' + (month + 1) : (month + 1).toString()) + '-' + (day <= 9 ? '0' + day : day.toString()))
+}
+
+function mountDayMonth(day, month){
+    return ((day <= 9 ? '0' + day : day.toString()) + (month < 9 ? '0' + (month + 1) : (month + 1).toString()))
+}
+
+function mountHour(hour, minute){
+    return (hour <= 9 ? '0' + hour : hour.toString()) + 'h' + (minute <= 9 ? '0' + minute : minute.toString())
+}
+
 function getPromise(url){
     
     return new Promise((resolve, reject) => {
@@ -44,9 +57,9 @@ async function makeSynchronousRequestSoccer() {
 
                     let dateGame = oneMatch.data.split('-');
 
-                    dateGame = new Date(dateGame[0], parseInt(dateGame[1]) - 1, dateGame[2]);
+                    dateGame = new Date(dateGame[0], parseInt(dateGame[1]) - 1, dateGame[2], parseInt(oneMatch.horario.split('h')[0]), parseInt(oneMatch.horario.split('h')[1]), 0, 0);
 
-                    let dateGameStr = (dateGame.getDate() <= 9 ? '0' + dateGame.getDate() : dateGame.getDate()) + '-' + (dateGame.getMonth() < 9 ? '0' + (dateGame.getMonth() + 1) : (dateGame.getMonth() + 1));
+                    let dateGameStr = mountDayMonth(dateGame.getDate(), dateGame.getMonth());
     
                     allGamesSoccer.push({
                         type: 'soccer',
@@ -82,7 +95,7 @@ function makeNBA() {
             rightID = 0;
 
         for(id = 0; id < nbaIDGame.length; id++){
-            if((dateNow.getFullYear() + '-' + (dateNow.getMonth() < 9 ? '0' + (dateNow.getMonth() + 1) : (dateNow.getMonth() + 1) ) + '-' + (dateNow.getDate() <= 9 ? '0' + dateNow.getDate() : dateNow.getDate())) <= nbaIDGame[id]){
+            if(mountDateUTC(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate()) <= nbaIDGame[id]){
                 rightID = id;
                 break;
             }
@@ -93,7 +106,7 @@ function makeNBA() {
                 if(oneGame.broadcasters.intlTvBroadcasters.length != 0){
 
                     let dateGame = new Date(new Date(oneGame.gameDateTimeUTC).getTime() - 10800000),
-                        dateGameStr = (dateGame.getDate() <= 9 ? '0' + dateGame.getDate() : dateGame.getDate()) + '-' + (dateGame.getMonth() < 9 ? '0' + (dateGame.getMonth() + 1) : (dateGame.getMonth() + 1));
+                        dateGameStr = mountDayMonth(dateGame.getDate(), dateGame.getMonth());
 
                     allGamesNBA.push({
                         type: 'nba',
@@ -104,8 +117,8 @@ function makeNBA() {
                         acronymAway: oneGame.awayTeam.teamTricode,
                         date: dateGameStr,
                         dateShow: dateGameStr.replace('-','/'),
-                        dateType: new Date(dateGame.getFullYear(), dateGame.getMonth(), dateGame.getDate()),
-                        time: (dateGame.getHours() <= 9 ? '0' + dateGame.getHours() : dateGame.getHours()) + 'h' + (dateGame.getMinutes() <= 9 ? '0' + dateGame.getMinutes() : dateGame.getMinutes()),
+                        dateType: dateGame,
+                        time: mountHour(dateGame.getHours(), dateGame.getMinutes()),
                         logoHome: 'https://cdn.nba.com/logos/nba/' + oneGame.homeTeam.teamId + '/global/L/logo.svg',
                         logoAway: 'https://cdn.nba.com/logos/nba/' + oneGame.awayTeam.teamId + '/global/L/logo.svg',
                     }) 
@@ -150,21 +163,23 @@ module.exports = {
 
             let gamesNow = [],
                 gamesDate = [],
-                auxDate;
+                auxDate,
+                auxDateStr
 
             gamesNow = gamesNow.concat(await makeSynchronousRequestSoccer());
             gamesNow = gamesNow.concat(makeNBA());
             
             for(day = 0; day < 7; day++){
                 auxDate = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate() + day);
+                auxDateStr = mountDayMonth(auxDate.getDate(), auxDate.getMonth())
                 gamesDate.push({
-                    dateShow: (auxDate.getDate() <= 9 ? '0' + auxDate.getDate() : auxDate.getDate()) + '/' + (auxDate.getMonth() < 9 ? '0' + (auxDate.getMonth() + 1) : (auxDate.getMonth() + 1)),
-                    date: (auxDate.getDate() <= 9 ? '0' + auxDate.getDate() : auxDate.getDate()) + '-' + (auxDate.getMonth() < 9 ? '0' + (auxDate.getMonth() + 1) : (auxDate.getMonth() + 1)),
+                    date: auxDateStr,
+                    dateShow: auxDateStr.replace('-','/'),
                     weekDay: weekDay[auxDate.getDay()],
                 })
             }
 
-            res.render('index', {gamesNow: gamesNow.sort((a, b) => a.dateType - b.dateType == 0 ? parseInt(a.time) - parseInt(b.time) : a.dateType - b.dateType), gamesDate});
+            res.render('index', {gamesNow: gamesNow.sort((a, b) => a.dateType - b.dateType), gamesDate});
 
         })();
     },
