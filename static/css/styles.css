@@ -27,12 +27,12 @@ body {
     color: rgb(0, 0, 0);
 }
 
-.text-color-50.dark{
-    color: rgba(255, 255, 255, 0.5);
+.text-color-60.dark{
+    color: rgba(255, 255, 255, 0.6);
 }
 
-.text-color-50.light{
-    color: rgba(0, 0, 0, 0.5);
+.text-color-60.light{
+    color: rgba(0, 0, 0, 0.6);
 }
 
 .btn-custom.dark{

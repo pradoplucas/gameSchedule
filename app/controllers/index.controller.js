@@ -10,7 +10,7 @@ function mountDateUTC(year, month, day){
 }
 
 function mountDayMonth(day, month){
-    return ((day <= 9 ? '0' + day : day.toString()) + (month < 9 ? '0' + (month + 1) : (month + 1).toString()))
+    return ((day <= 9 ? '0' + day : day.toString()) + '-' + (month < 9 ? '0' + (month + 1) : (month + 1).toString()))
 }
 
 function mountHour(hour, minute){
