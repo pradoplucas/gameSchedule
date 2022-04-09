@@ -1,9 +1,7 @@
-const https = require('https'),
-      fs = require('fs');
+const https = require('https')
 
 const dateNow = new Date(Date.now() - 10800000),
       weekDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];  
-
 
 function mountDateUTC(year, month, day){
     return (year.toString() + '-' + (month < 9 ? '0' + (month + 1) : (month + 1).toString()) + '-' + (day <= 9 ? '0' + day : day.toString()))
@@ -42,13 +40,11 @@ function getPromise(url){
     });
 }
 
-async function makeSynchronousRequestSoccer() {
+async function makeSoccer() {
 	try {
-		let http_promise = getPromise(process.env.URL_SOCCER),
-		    response_body = await http_promise;
 
-        let allGamesSoccer = [],
-            dataJSON = JSON.parse(response_body),
+        let dataJSON = JSON.parse(await getPromise(process.env.URL_SOCCER)),
+            allGamesSoccer = [],
             soccerTeams = JSON.parse(process.env.SOCCER_TEAMS);
 
         for(oneMatch of dataJSON.matches){
@@ -87,44 +83,56 @@ async function makeSynchronousRequestSoccer() {
 	}
 }
 
-function makeNBA() {
-	try {
-        let nbaIDGame = JSON.parse(fs.readFileSync('./data/nbaIDGame.json')),
-            nbaData = JSON.parse(fs.readFileSync('./data/nbaData.json')),
+async function makeNBA() {
+
+    try{
+        let nbaData = JSON.parse(await getPromise(process.env.URL_NBA)),
+            dateNowStr = mountDateUTC(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate()),
             allGamesNBA = [],
-            rightID = 0;
+            dateCount = 0
+        
+        try{
 
-        for(id = 0; id < nbaIDGame.length; id++){
-            if(mountDateUTC(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate()) <= nbaIDGame[id]){
-                rightID = id;
-                break;
-            }
-        }
+            for(let oneGameDate of nbaData.leagueSchedule.gameDates){
 
-        for(id = rightID; id < rightID + 6; id++){
-            for(oneGame of nbaData.leagueSchedule.gameDates[id].games){
-                if(oneGame.broadcasters.intlTvBroadcasters.length != 0){
-
-                    let dateGame = new Date(new Date(oneGame.gameDateTimeUTC).getTime() - 10800000),
-                        dateGameStr = mountDayMonth(dateGame.getDate(), dateGame.getMonth());
-
-                    allGamesNBA.push({
-                        type: 'nba',
-                        league: 'NBA',
-                        teamHome: oneGame.homeTeam.teamName,
-                        acronymHome: oneGame.homeTeam.teamTricode,
-                        teamAway: oneGame.awayTeam.teamName,
-                        acronymAway: oneGame.awayTeam.teamTricode,
-                        date: dateGameStr,
-                        dateShow: dateGameStr.replace('-','/'),
-                        dateType: dateGame,
-                        time: mountHour(dateGame.getHours(), dateGame.getMinutes()),
-                        logoHome: 'https://cdn.nba.com/logos/nba/' + oneGame.homeTeam.teamId + '/global/L/logo.svg',
-                        logoAway: 'https://cdn.nba.com/logos/nba/' + oneGame.awayTeam.teamId + '/global/L/logo.svg',
-                    }) 
+                let auxDate = oneGameDate.gameDate.split(' ')[0].split('/');
+            
+                if(dateNowStr <= mountDateUTC(parseInt(auxDate[2]), parseInt(auxDate[0]) - 1, parseInt(auxDate[1]))){
+        
+                    for(let oneGame of oneGameDate.games){
+                        if(oneGame.broadcasters.intlTvBroadcasters.length != 0){
+        
+                            let dateGame = new Date(new Date(oneGame.gameDateTimeUTC).getTime() - 10800000),
+                                dateGameStr = mountDayMonth(dateGame.getDate(), dateGame.getMonth());
+        
+                            allGamesNBA.push({
+                                type: 'nba',
+                                league: 'NBA',
+                                teamHome: oneGame.homeTeam.teamName,
+                                acronymHome: oneGame.homeTeam.teamTricode,
+                                teamAway: oneGame.awayTeam.teamName,
+                                acronymAway: oneGame.awayTeam.teamTricode,
+                                date: dateGameStr,
+                                dateShow: dateGameStr.replace('-','/'),
+                                dateType: dateGame,
+                                time: mountHour(dateGame.getHours(), dateGame.getMinutes()),
+                                logoHome: 'https://cdn.nba.com/logos/nba/' + oneGame.homeTeam.teamId + '/global/L/logo.svg',
+                                logoAway: 'https://cdn.nba.com/logos/nba/' + oneGame.awayTeam.teamId + '/global/L/logo.svg',
+                            }) 
+                        }
+                    }
+    
+                    dateCount++
+    
+                    if(dateCount == 7) break
+    
                 }
             }
-        } 
+        }
+        catch(err){
+            console.log(err)
+        }
+      
 
         return allGamesNBA;
 
@@ -134,44 +142,20 @@ function makeNBA() {
 	}
 }
 
-async function updateNBA(){
-    try{
-        let http_promise = getPromise(process.env.URL_NBA),
-            response_body = await http_promise;
-    
-        let nbaData = JSON.parse(response_body),
-            nbaIDGame = [],
-            auxDate = '';
-        
-        for(id = 0; id < nbaData.leagueSchedule.gameDates.length; id++){
-            auxDate = nbaData.leagueSchedule.gameDates[id].gameDate.split(' ')[0].split('/');
-            nbaIDGame.push(auxDate[2] + '-' + (auxDate[0].length == 1 ? '0' + auxDate[0]: auxDate[0]) + '-' + (auxDate[1].length == 1 ? '0' + auxDate[1]: auxDate[1]));
-        }
-        
-        fs.writeFileSync('./data/nbaData.json', response_body);
-        fs.writeFileSync('./data/nbaIDGame.json', JSON.stringify(nbaIDGame));
-    }
-    catch(error){
-        console.log(error);
-    }
-}
-
 module.exports = {
 	get: (req, res) => {
  
         (async function () {
 
             let gamesNow = [],
-                gamesDate = [],
-                auxDate,
-                auxDateStr
+                gamesDate = []
 
-            gamesNow = gamesNow.concat(await makeSynchronousRequestSoccer());
-            gamesNow = gamesNow.concat(makeNBA());
+            gamesNow = gamesNow.concat(await makeSoccer());
+            gamesNow = gamesNow.concat(await makeNBA());
             
             for(day = 0; day < 7; day++){
-                auxDate = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate() + day);
-                auxDateStr = mountDayMonth(auxDate.getDate(), auxDate.getMonth())
+                let auxDate = new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate() + day);
+                let auxDateStr = mountDayMonth(auxDate.getDate(), auxDate.getMonth())
                 gamesDate.push({
                     date: auxDateStr,
                     dateShow: auxDateStr.replace('-','/'),
@@ -182,21 +166,5 @@ module.exports = {
             res.render('index', {gamesNow: gamesNow.sort((a, b) => a.dateType - b.dateType), gamesDate});
 
         })();
-    },
-    getUpdate: (req, res) => {
-
-        if(req.params.secretKey == process.env.SECRET_KEY){
-            (async function () {
-    
-                await updateNBA();
-    
-                res.end('updated');
-
-            })();
-        }
-        else{
-            res.end('fail');
-        }
-
     }
 }
