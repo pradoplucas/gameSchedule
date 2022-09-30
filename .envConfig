@@ -1,9 +1,13 @@
-SECRET_KEY=
+SOCCER_TEAMS=[]
 
-SOCCER_TEAMS=
+URL_SOCCER=https://www.uol.com.br/esporte/service/?loadComponent=match-service&contentType=json
 
-URL_SOCCER=
+URL_TEAMS_ID=https://www.uol.com.br/esporte/service/?loadComponent=api&data={%22module%22:%22tools%22,%22api%22:%22json%22,%22method%22:%22open%22,%22busca%22:%22commons.uol.com.br/sistemas/esporte/modalidades/futebol/campeonatos/etc/jogos/resultados_e_proximos/dados.json%22}
 
-URL_NBA=
+URL_NBA=https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_11.json
 
-URL_NFL=
+URL_CS=https://api.midnite.com/v0/games/2/matches
+
+URL_CS1=https://api.draft5.gg/live-odds/ggbet/draft5csgo
+
+URL_NFL=https://site.web.api.espn.com/apis/v2/scoreboard/header?sport=football&league=nfl&region=us&lang=en&contentorigin=espn&buyWindow=1m&showAirings=buy%2Clive%2Creplay&showZipLookup=true&tz=America%2FNew_York
